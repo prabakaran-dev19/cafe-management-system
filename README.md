@@ -1,23 +1,70 @@
-# Cafe-Management-System
+☕ Cafe Management System
+A full-stack web application designed to streamline daily cafe operations, menu management, order tracking, and billing efficiency.
+� �
 
-### Overview:
-The Cafe Management System mini-project is a database-based solution designed to streamline and enhance the operations of a cafe. We designed a user-friendly interface for cafe staff and management, collectively improving usability. Through our combined efforts, we significantly simplified daily cafe operations, contributing to enhancing overall efficiency and customer service. This project provides tools for efficient customer order processing, inventory management, and sales tracking. It aims to improve customer service, optimize resource utilization, and assist cafe owners in making data-driven decisions to enhance their business operations.
+📌 Project Overview
 
-### Technology Used:
-* Front End - HTML, CSS, JavaScript
-* Back End - Python Flask
-* Database - MySql
+The Cafe Management System helps cafe managers and staff manage orders, customize menus, track sales, and generate receipts seamlessly. Built with a responsive frontend and a lightweight Python Flask backend powered by MySQL.
 
-### Live Demo : https://joyline-rencita-dsouza.github.io/cafe-management-system/
-  
-### Screenshots:
+🛠️ Tech Stack
 
-![Screenshot (763)](https://github.com/Joyline-Rencita/Cafe-Management-System/assets/107092284/a469a3a2-f585-4b2a-a87e-19db796e427c)
-![Screenshot (1050)](https://github.com/user-attachments/assets/42232f2c-8a35-4b0c-a43a-bb6867540f1c)
-![Screenshot (1052)](https://github.com/user-attachments/assets/f580afc5-bc11-47e1-a48e-989583eb4cde)
-![Screenshot (1051)](https://github.com/user-attachments/assets/705efab6-fe10-44d4-9286-a3c7dddf69c3)
-![Screenshot (1052)](https://github.com/user-attachments/assets/632d703f-72bd-4ff5-b078-174d95a29121)
-![Screenshot (767)](https://github.com/Joyline-Rencita/Cafe-Management-System/assets/107092284/bb8c1c00-d509-4617-9aeb-c41f496260ef)
+Frontend: HTML5, CSS3, JavaScript (ES6+)
+Backend: Python (Flask Framework)
+Database: MySQL
 
+🚀 Key Features
 
+Interactive Dashboard: View total orders, daily revenue, and recent transactions at a glance.
+Menu Customization: Easily manage items, categories (drinks, pastries, meals), and pricing.
+Order Processing: Real-time table ordering and status updates (Pending/Completed).
+Bill Generation: Automated order receipt generation for quick customer checkout.
+Database Integration: Secure and efficient data handling with MySQL.
 
+⚙️ Setup & Installation
+
+Prerequisites
+Make sure you have the following installed on your local machine:
+Python 3.x
+MySQL Server
+1. Clone the Repository
+git clone https://github.com/prabakaran-dev19/cafe-management-system.git
+cd cafe-management-system
+
+2. Set Up Virtual Environment (Optional but Recommended)
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+
+3. Install Dependencies
+pip install flask mysql-connector-python
+
+4. Database Setup
+Open your MySQL client (e.g., MySQL Workbench or Command Line).
+Create a new database and import the provided schema:
+CREATE DATABASE cafe_db;
+USE cafe_db;
+-- Run script/schema.sql here
+Update database credentials in app.py or your config file.
+
+5. Run the Application
+python app.py
+Open your browser and navigate to http://127.0.0.1:5000/.
+
+📂 Project Structure
+
+cafe-management-system/
+│
+├── static/          # CSS, JavaScript, and Images
+├── templates/       # HTML Pages (Jinja2 Templates)
+├── app.py           # Flask Main Application
+├── config.py        # Database Configurations
+├── schema.sql       # MySQL Database Schema
+└── README.md        # Project Documentation
+
+👨‍💻 Author
+
+Prabakaran M
+GitHub: @prabakaran-dev19
+LinkedIn: Prabakaran M
