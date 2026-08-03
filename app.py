@@ -1,4 +1,4 @@
-from flask import Flask, render_template,request,redirect,url_for,flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 
@@ -12,13 +12,30 @@ app.secret_key = 'your secrete key'
 
 app.config['MYSQL_HOST'] = 'localhost' #hostname
 app.config['MYSQL_USER'] = 'root'      #username
-app.config['MYSQL_PASSWORD'] = ''      #password
+app.config['MYSQL_PASSWORD'] = '9802'      #password
 #in my case password is null so i am keeping empty
-app.config['MYSQL_DB'] = 'practice'    #database name
+app.config['MYSQL_DB'] = 'cafe_management_system'   #database name
 
 mysql = MySQL(app)
 
 #------------------------------------- welcome page -----------------------------------
+MENU = {
+    "item2": {"name": "AMERICANO", "price": 120},
+    "item3": {"name": "CAPPUCCINNO", "price": 150},
+    "item4": {"name": "GRILLED PANEER SANDWICH", "price": 180},
+    "item5": {"name": "GRILLED CHICKEN SANDWICH", "price": 220},
+    "item6": {"name": "MARGARITA", "price": 350},
+    "item7": {"name": "FARMHOUSE", "price": 400},
+    "item8": {"name": "CHICKEN DOMINATOR", "price": 500},
+    "item9": {"name": "PANEER BURGER", "price": 180},
+    "item10": {"name": "CHICKEN BURGER", "price": 220},
+    "item11": {"name": "CHEESE BURGER", "price": 200},
+    "item12": {"name": "FRESH FRUIT JUICE", "price": 120},
+    "item13": {"name": "MILKSHAKES", "price": 150},
+    "item14": {"name": "WATER BOTTLE", "price": 20},
+    "item15": {"name": "PANEER WRAP", "price": 180},
+    "item16": {"name": "CHICKEN WRAP", "price": 220}
+}
 
 @app.route("/")
 def home():
@@ -223,35 +240,53 @@ def reviews():
 def contact():
     return render_template("contact.html")
 
-@app.route("/item", methods=['GET','POST'])
+@app.route("/item", methods=["GET", "POST"])
 def item():
-    # cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    if request.method == 'POST':
-        return redirect(url_for('receipt'))
-    #     item1 = request.form.getlist('items')
-    #     item2 = request.form.getlist('items')
-    #     item3 = request.form.getlist('items')
-    #     item4 = request.form.getlist('items')
-    #     item5 = request.form.getlist('items')
-    #     item6 = request.form.getlist('items')
-    #     item7 = request.form.getlist('items')
-    #     item8 = request.form.getlist('items')
-    #     qty_item1 = request.form['item1']
-    #     qty_item2 = request.form['item2']
-    #     qty_item3 = request.form['item3']
-    #     qty_item4 = request.form['item4']
-    #     qty_item5 = request.form['item5']
-    #     qty_item6 = request.form['item6']
-    #     qty_item7 = request.form['item7']
-    #     qty_item8 = request.form['item8']
-    #     return render_template("item.html")
+
+    if request.method == "POST":
+
+        selected_items = request.form.getlist("items")
+
+        bill = []
+        grand_total = 0
+
+        for item in selected_items:
+
+            qty = int(request.form.get(item, 0))
+
+            if qty > 0:
+
+                price = MENU[item]["price"]
+                total = price * qty
+
+                bill.append({
+                    "name": MENU[item]["name"],
+                    "qty": qty,
+                    "price": price,
+                    "total": total
+                })
+
+                grand_total += total
+
+        session["bill"] = bill
+        session["grand_total"] = grand_total
+
+        return redirect(url_for("receipt"))
 
     return render_template("item.html")
 
 
 @app.route("/receipt")
 def receipt():
-    return render_template("receipt.html")
+
+    bill = session.get("bill", [])
+    grand_total = session.get("grand_total", 0)
+
+    return render_template(
+        "receipt.html",
+        bill=bill,
+        grand_total=grand_total
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)
