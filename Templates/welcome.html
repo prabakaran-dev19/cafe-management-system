@@ -3,34 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=+, initial-scale=1.0">
-    <title>Welcome</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/welcome.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Creek — Welcome</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/welcome.css') }}?v=2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="shortcut icon" href="img/icon.webp" type="image/x-icon">
 </head>
 <body>
-    <img class="background" src="{{ url_for('static',filename='images/background1.jpg') }}">
+    <img class="background" src="{{ url_for('static',filename='images/background1.jpg') }}" alt="">
+    <div class="overlay"></div>
+
     <div class="container">
-        <div class="navbabr">
+
+        <header class="navbabr">
             <a href="#" class="logo">
-                <img src="{{ url_for('static', filename='images/Coffee-Creek_Logo.png') }}" alt="Image">
+                <img src="{{ url_for('static', filename='images/Coffee-Creek_Logo.png') }}" alt="Coffee Creek">
             </a>
             <ul class="menu">
-                <li><a href="#">HOME</a></li>
-                <li><a href="/Admin_login">LOGIN</a></li>
-       <!---          <li><a href="/menu">MENU</a></li>        -->
-                <li><a href="/reviews">REVIEWS</a></li>   
-       <!---          <li><a href="/contact">CONTACT</a></li>   -->
-                <li><a href="#">ABOUT US</a></li>        
+                <li><a href="#">Home</a></li>
+                <li><a href="/Admin_login">Login</a></li>
+                <li><a href="/reviews">Reviews</a></li>
+                <li><a href="#">About Us</a></li>
             </ul>
-        </div>
+        </header>
+
         <div class="home">
-            <h2 class="title1">Good <span>Coffee</span> always <br>Find audience</h2>
-            <p>We provide variety of cusines and Best Coffees</p>
-        <!-- <p><input type="text" placeholder=" Enter your phone number "></p> -->
-            <button type="button"><a href="/cust_login">Shop Now</a></button>
+            <p class="eyebrow">Est. Coffee Creek &mdash; Roasted Daily</p>
+
+            <h2 class="title1">Good <span>Coffee</span> always<br>finds its audience</h2>
+
+            <p class="subtitle">We provide variety of cuisines and the best coffees, brewed fresh every morning.</p>
+
+            <a href="/cust_login" class="cta-btn">
+                <span class="steam" aria-hidden="true">
+                    <span class="wisp wisp1"></span>
+                    <span class="wisp wisp2"></span>
+                    <span class="wisp wisp3"></span>
+                </span>
+                <span class="cta-text">Shop Now</span>
+                <i class="fa fa-long-arrow-right" aria-hidden="true"></i>
+            </a>
         </div>
+
     </div>
 </body>
 </html>
