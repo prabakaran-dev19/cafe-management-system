@@ -1,20 +1,21 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
+import os
 
 
 
 app = Flask(__name__)
 
 
-app.secret_key = 'your secrete key'
+app.secret_key = os.environ.get('SECRET_KEY', 'your secrete key')
 
 
-app.config['MYSQL_HOST'] = 'localhost' #hostname
-app.config['MYSQL_USER'] = 'root'      #username
-app.config['MYSQL_PASSWORD'] = '9802'      #password
-#in my case password is null so i am keeping empty
-app.config['MYSQL_DB'] = 'cafe_management_system'   #database name
+app.config['MYSQL_HOST'] = os.environ.get('MYSQLHOST', 'localhost')
+app.config['MYSQL_USER'] = os.environ.get('MYSQLUSER', 'root')
+app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQLPASSWORD', '9802')
+app.config['MYSQL_DB'] = os.environ.get('MYSQLDATABASE', 'cafe_management_system')
+app.config['MYSQL_PORT'] = int(os.environ.get('MYSQLPORT', 3306))
 
 mysql = MySQL(app)
 
@@ -525,4 +526,5 @@ def receipt():
     )
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
