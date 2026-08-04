@@ -8,27 +8,32 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/Beverages.css') }}">
 </head>
 <body>
+    <a href="{{ url_for('cart') }}" style="position:fixed; top:15px; right:15px; background:#ff9800; padding:10px 18px; border-radius:25px; text-decoration:none; color:white; font-weight:bold; font-family:sans-serif; box-shadow:0 2px 8px rgba(0,0,0,0.3); z-index:9999; display:flex; align-items:center; gap:6px;">
+    🛒 Cart
+    {% if cart_count and cart_count > 0 %}
+        <span style="background:#e53935; color:white; border-radius:50%; min-width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; font-size:12px; padding:0 5px;">{{ cart_count }}</span>
+    {% endif %}
+</a>
     <div class="flex">
         <div class="card">
             <img src="{{ url_for('static', filename='images/Fruit.jpg') }}" class="card-img" alt="Image">
             <h3>Fresh Fruit Juice</h3>
             <p>Select from our range of Fruit Juices.<br>Mention fruit at the counter.</p>
-            <button class="btn">Order Now</button>
+            <a href="{{ url_for('add_to_cart', item_key='item12') }}" class="btn">Order Now</a>
         </div>
                 
         <div class="card">
             <img src="{{ url_for('static', filename='images/Milkshakes.jpg') }}" class="card-img" alt="Image">
             <h3>Milkshakes</h3>
             <p>Choose from our range of dairy shakes.<br>Mention fruit/flavor at the counter.</p>
-            <button class="btn">Order Now</button>
+            <a href="{{ url_for('add_to_cart', item_key='item13') }}" class="btn">Order Now</a>
         </div>
         <div class="card">
             <img src="{{ url_for('static', filename='images/Water.png') }}" class="card-img" alt="Image">
             <h3>Packaged Mineral Water</h3>
             <p>Mineral Water.<br>Mention the brand at the counter.</p>
-            <button class="btn">Order Now</button>
-            
-        
+            <a href="{{ url_for('add_to_cart', item_key='item14') }}" class="btn">Order Now</a>
+        </div>
         
     </div>
 </body>

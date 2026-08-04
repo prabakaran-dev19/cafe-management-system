@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart</title>
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="well col-xs-10 col-sm-10 col-md-6 col-xs-offset-1 col-sm-offset-1 col-md-offset-3">
+
+                <div class="text-center">
+                    <h1>Your Cart</h1>
+                </div>
+
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th class="text-center">Price</th>
+                            <th class="text-center">Total</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if bill and bill|length > 0 %}
+                            {% for entry in bill %}
+                            <tr>
+                                <td><em>{{ entry.name }}</em></td>
+                                <td style="text-align: center">{{ entry.qty }}</td>
+                                <td class="text-center">₹{{ entry.price }}</td>
+                                <td class="text-center">₹{{ entry.total }}</td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('remove_from_cart', item_key=entry.key) }}" class="btn btn-danger btn-xs">Remove</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                                <td colspan="3" class="text-right"><h4><strong>Grand Total:</strong></h4></td>
+                                <td class="text-center text-danger" colspan="2"><h4><strong>₹{{ grand_total }}</strong></h4></td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">Your cart is empty. Go add some items!</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <div class="text-center">
+                    <a href="{{ url_for('menu') }}" class="btn btn-default">Back to Menu</a>
+                    {% if bill and bill|length > 0 %}
+                        <a href="{{ url_for('checkout') }}" class="btn btn-success">Checkout</a>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

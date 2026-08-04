@@ -18,29 +18,122 @@ app.config['MYSQL_DB'] = 'cafe_management_system'   #database name
 
 mysql = MySQL(app)
 
-#------------------------------------- welcome page -----------------------------------
-MENU = {
-    "item2": {"name": "AMERICANO", "price": 120},
-    "item3": {"name": "CAPPUCCINNO", "price": 150},
-    "item4": {"name": "GRILLED PANEER SANDWICH", "price": 180},
-    "item5": {"name": "GRILLED CHICKEN SANDWICH", "price": 220},
-    "item6": {"name": "MARGARITA", "price": 350},
-    "item7": {"name": "FARMHOUSE", "price": 400},
-    "item8": {"name": "CHICKEN DOMINATOR", "price": 500},
-    "item9": {"name": "PANEER BURGER", "price": 180},
-    "item10": {"name": "CHICKEN BURGER", "price": 220},
-    "item11": {"name": "CHEESE BURGER", "price": 200},
-    "item12": {"name": "FRESH FRUIT JUICE", "price": 120},
-    "item13": {"name": "MILKSHAKES", "price": 150},
-    "item14": {"name": "WATER BOTTLE", "price": 20},
-    "item15": {"name": "PANEER WRAP", "price": 180},
-    "item16": {"name": "CHICKEN WRAP", "price": 220}
-}
+#------------------------------------- MENU (now loaded from database) -----------------------------------
 
-@app.route("/")
-def home():
-    #return render_template("welcome.html",username=session['username'])     I changed this
-    return render_template("welcome.html")
+def get_menu():
+    """Fetches all menu items from the database and returns them as a dict,
+    e.g. {'item2': {'name': 'AMERICANO', 'price': 120, 'category': 'Coffee'}, ...}
+    This replaces the old hardcoded MENU dictionary so admin edits persist."""
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT ITEM_ID, ITEM_NAME, PRICE, CATEGORY FROM MENU_ITEMS')
+    rows = cursor.fetchall()
+    menu = {}
+    for row in rows:
+        menu[row['ITEM_ID']] = {
+            'name': row['ITEM_NAME'],
+            'price': row['PRICE'],
+            'category': row['CATEGORY']
+        }
+    return menu
+
+
+def admin_required(f):
+    """Decorator: blocks access to a route unless the admin is logged in."""
+    from functools import wraps
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not session.get('admin_logged_in'):
+            flash('Please login as admin first!')
+            return redirect(url_for('Admin_login'))
+        return f(*args, **kwargs)
+    return wrapper
+
+#------------------------------------- CART COUNT (available on every page) -----------------------------------
+
+@app.context_processor
+def inject_cart_count():
+    cart = session.get('cart', {})
+    count = sum(cart.values())
+    return dict(cart_count=count)
+
+#------------------------------------- CART ROUTES -----------------------------------
+
+@app.route("/add_to_cart/<item_key>")
+def add_to_cart(item_key):
+    menu = get_menu()
+    if item_key not in menu:
+        flash("Item not found!")
+        return redirect(request.referrer or url_for('menu'))
+
+    cart = session.get('cart', {})
+    cart[item_key] = cart.get(item_key, 0) + 1
+    session['cart'] = cart
+    session.modified = True
+
+    flash(f"{menu[item_key]['name']} added to cart!")
+    return redirect(request.referrer or url_for('menu'))
+
+
+@app.route("/cart")
+def cart():
+    menu = get_menu()
+    cart = session.get('cart', {})
+    bill = []
+    grand_total = 0
+
+    for item_key, qty in cart.items():
+        if item_key not in menu:
+            continue   # item may have been deleted by admin since being added to cart
+        price = menu[item_key]['price']
+        total = price * qty
+        bill.append({
+            'key': item_key,
+            'name': menu[item_key]['name'],
+            'qty': qty,
+            'price': price,
+            'total': total
+        })
+        grand_total += total
+
+    return render_template('cart.html', bill=bill, grand_total=grand_total)
+
+
+@app.route("/remove_from_cart/<item_key>")
+def remove_from_cart(item_key):
+    cart = session.get('cart', {})
+    if item_key in cart:
+        del cart[item_key]
+        session['cart'] = cart
+        session.modified = True
+    return redirect(url_for('cart'))
+
+
+@app.route("/checkout")
+def checkout():
+    menu = get_menu()
+    cart = session.get('cart', {})
+    bill = []
+    grand_total = 0
+
+    for item_key, qty in cart.items():
+        if item_key not in menu:
+            continue
+        price = menu[item_key]['price']
+        total = price * qty
+        bill.append({
+            'name': menu[item_key]['name'],
+            'qty': qty,
+            'price': price,
+            'total': total
+        })
+        grand_total += total
+
+    session['bill'] = bill
+    session['grand_total'] = grand_total
+    session.pop('cart', None)   # clear cart after checkout
+    session.modified = True
+
+    return redirect(url_for('receipt'))
 
 #------------------------------------ Admin Login Page ------------------------------------
 
@@ -61,6 +154,7 @@ def Admin_login() :
                 flash('Invalid Credentials')
             else:
                 # print('inside 2 else')
+                session['admin_logged_in'] = True
                 flash('You have logged in successfully!!')
                 return redirect(url_for('admin_dashboard'))
 
@@ -68,9 +162,97 @@ def Admin_login() :
 
 @app.route('/Admin_logout')
 def AdminLogout() :
+    session.pop('admin_logged_in', None)
     log1 = ''
     log1 = 'You have logged out successfully!!'
     return render_template('AdminLogin.html', log1=log1)   
+
+
+#-------------------------------- Admin Menu Management (CRUD) ----------------------------------
+
+@app.route("/admin/menu")
+@admin_required
+def admin_menu():
+    menu = get_menu()
+    # convert to list of dicts (with id included) so the template can loop easily
+    items = [{'id': k, 'name': v['name'], 'price': v['price'], 'category': v['category']} for k, v in menu.items()]
+    items.sort(key=lambda x: (x['category'], x['name']))
+    return render_template('admin_menu.html', items=items)
+
+
+@app.route("/admin/menu/add", methods=['GET', 'POST'])
+@admin_required
+def admin_menu_add():
+    error = None
+    if request.method == 'POST':
+        item_id = request.form.get('item_id', '').strip()
+        name = request.form.get('name', '').strip()
+        price = request.form.get('price', '').strip()
+        category = request.form.get('category', '').strip()
+        description = request.form.get('description', '').strip()
+        image_url = request.form.get('image_url', '').strip()
+
+        if not item_id or not name or not price or not category:
+            error = 'Please fill out all required fields!'
+        else:
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute('SELECT * FROM MENU_ITEMS WHERE ITEM_ID = %s', (item_id,))
+            existing = cursor.fetchone()
+            if existing:
+                error = f'Item ID "{item_id}" already exists! Choose a different ID.'
+            else:
+                cursor.execute(
+                    'INSERT INTO MENU_ITEMS (ITEM_ID, ITEM_NAME, PRICE, CATEGORY, DESCRIPTION, IMAGE_URL) VALUES (%s, %s, %s, %s, %s, %s)',
+                    (item_id, name, price, category, description, image_url)
+                )
+                mysql.connection.commit()
+                flash(f'{name} added to the menu!')
+                return redirect(url_for('admin_menu'))
+
+    return render_template('admin_menu_form.html', mode='add', error=error, item=None)
+
+
+@app.route("/admin/menu/edit/<item_id>", methods=['GET', 'POST'])
+@admin_required
+def admin_menu_edit(item_id):
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    error = None
+
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        price = request.form.get('price', '').strip()
+        category = request.form.get('category', '').strip()
+        description = request.form.get('description', '').strip()
+        image_url = request.form.get('image_url', '').strip()
+
+        if not name or not price or not category:
+            error = 'Please fill out all required fields!'
+        else:
+            cursor.execute(
+                'UPDATE MENU_ITEMS SET ITEM_NAME = %s, PRICE = %s, CATEGORY = %s, DESCRIPTION = %s, IMAGE_URL = %s WHERE ITEM_ID = %s',
+                (name, price, category, description, image_url, item_id)
+            )
+            mysql.connection.commit()
+            flash(f'{name} updated!')
+            return redirect(url_for('admin_menu'))
+
+    cursor.execute('SELECT * FROM MENU_ITEMS WHERE ITEM_ID = %s', (item_id,))
+    item = cursor.fetchone()
+    if not item:
+        flash('Item not found!')
+        return redirect(url_for('admin_menu'))
+
+    return render_template('admin_menu_form.html', mode='edit', error=error, item=item)
+
+
+@app.route("/admin/menu/delete/<item_id>")
+@admin_required
+def admin_menu_delete(item_id):
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('DELETE FROM MENU_ITEMS WHERE ITEM_ID = %s', (item_id,))
+    mysql.connection.commit()
+    flash('Item deleted from menu!')
+    return redirect(url_for('admin_menu'))
 
 #-------------------------------- Customer Login ----------------------------------------
 
@@ -204,33 +386,56 @@ def analytics():
 #----------------------------*********************************------------------------------
 
 #----------------------------*************Menu****************------------------------------
+@app.route("/")
+def home():
+    #return render_template("welcome.html",username=session['username'])     I changed this
+    return render_template("welcome.html")
+
 @app.route("/menu")
 def menu():
     return render_template('menu.html')     
 
 @app.route("/coffeemenu")
 def coffeemenu():
-    return render_template("coffeemenu.html")
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM MENU_ITEMS WHERE CATEGORY = %s ORDER BY ITEM_NAME', ('Coffee',))
+    items = cursor.fetchall()
+    return render_template("category.html", items=items, css_file='coffemenu.css')
 
 @app.route("/pizzamenu")
 def pizzamenu():
-    return render_template("pizzamenu.html")
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM MENU_ITEMS WHERE CATEGORY = %s ORDER BY ITEM_NAME', ('Pizza',))
+    items = cursor.fetchall()
+    return render_template("category.html", items=items, css_file='pizzamenu.css')
 
 @app.route("/burgers")
 def burgers():
-    return render_template("burgers.html")
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM MENU_ITEMS WHERE CATEGORY = %s ORDER BY ITEM_NAME', ('Burgers',))
+    items = cursor.fetchall()
+    return render_template("category.html", items=items, css_file='Burgers.css')
 
 @app.route("/Sandwiches")
 def Sandwiches():
-    return render_template("Sandwiches.html")
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM MENU_ITEMS WHERE CATEGORY = %s ORDER BY ITEM_NAME', ('Sandwiches',))
+    items = cursor.fetchall()
+    return render_template("category.html", items=items, css_file='Sandwiches.css')
 
 @app.route("/shorteates")
 def shorteates():
-    return render_template("shorteates.html")
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM MENU_ITEMS WHERE CATEGORY = %s ORDER BY ITEM_NAME', ('ShortEats',))
+    items = cursor.fetchall()
+    return render_template("category.html", items=items, css_file='shorteates.css')
 
 @app.route("/Beverages")
 def Beverages():
-    return render_template("Beverages.html")
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM MENU_ITEMS WHERE CATEGORY = %s ORDER BY ITEM_NAME', ('Beverages',))
+    items = cursor.fetchall()
+    return render_template("category.html", items=items, css_file='Beverages.css')
 
 @app.route("/reviews")
 def reviews():
@@ -245,6 +450,7 @@ def item():
 
     if request.method == "POST":
 
+        menu = get_menu()
         selected_items = request.form.getlist("items")
 
         bill = []
@@ -254,13 +460,13 @@ def item():
 
             qty = int(request.form.get(item, 0))
 
-            if qty > 0:
+            if qty > 0 and item in menu:
 
-                price = MENU[item]["price"]
+                price = menu[item]["price"]
                 total = price * qty
 
                 bill.append({
-                    "name": MENU[item]["name"],
+                    "name": menu[item]["name"],
                     "qty": qty,
                     "price": price,
                     "total": total
@@ -290,4 +496,3 @@ def receipt():
 
 if __name__ == "__main__":
     app.run(debug=True)
-

@@ -8,6 +8,14 @@
     <link rel="stylesheet" href="{{ url_for('static',filename='css/menu.css') }}">
 </head>
 <body>
+    <div style="text-align:right; padding:10px;">
+    <a href="{{ url_for('cart') }}" style="background:orange; padding:10px 20px; border-radius:5px; text-decoration:none; color:white; font-weight:bold;">🛒 View Cart</a>
+</div>
+{% if session.admin_logged_in %}
+<a href="{{ url_for('admin_menu') }}" style="position:fixed; top:15px; left:15px; background:#333; padding:10px 18px; border-radius:25px; text-decoration:none; color:white; font-weight:bold; font-family:sans-serif; box-shadow:0 2px 8px rgba(0,0,0,0.3); z-index:9999;">
+    🛠️ Manage Menu
+</a>
+{% endif %}
     {% with message1 = get_flashed_messages() %}
         {% if message1 %}
             {% for message in message1 %}
@@ -21,39 +29,39 @@
             <img src="{{ url_for('static',filename='images/Coffee.jpg') }}" class="card-img" alt="Image">
             <h3>Coffee</h3>
             <p>Order from our range of freshly brewed Authentic Coffee served here.</p>
-            <button class="btn"><a href="/coffeemenu">Order Now</a></button>
+            <button class="btn"><a href="/coffeemenu">click here</a></button>
         </div>
                 
         <div class="card">
             <img src="{{ url_for('static',filename='images/pizza.jpg') }}" class="card-img" alt="Image">
             <h3>Pizza</h3>
             <p>Freshly hand tossed Pizza, baked at 480* F with cheese inserts served here.</p>
-            <button class="btn"><a href="/pizzamenu">Order Now</a></button>
+            <button class="btn"><a href="/pizzamenu">click here</a></button>
         </div>
         <div class="card">
             <img src="{{ url_for('static',filename='images/Burgers.jpg') }}" class="card-img" alt="Image">
             <h3>Burgers</h3>
             <p>Gourmet Burgers made with farm baked bread served here.</p>
-            <button class="btn"><a href="/burgers">Order Now</a></button>
+            <button class="btn"><a href="/burgers">click here</a></button>
         </div>
         <div class="card">
             <img src="{{ url_for('static',filename='images/Sandwiches.jpg') }}" class="card-img" alt="Image">
             <h3>Sandwiches</h3>
             <p>Sandwiches like you had never before served here.</p>
-            <button class="btn"><a href="/Sandwiches">Order Now</a></button>
+            <button class="btn"><a href="/Sandwiches">click here</a></button>
             
         </div>
         <div class="card">
             <img src="{{ url_for('static',filename='images/ShortEats.jpg') }}" class="card-img" alt="Image">
             <h3>Short Eates</h3>
             <p>Small bites that fill your stomach with goodness served here.</p>
-            <button class="btn"><a href="/shorteates">Order Now</a></button>
+            <button class="btn"><a href="/shorteates">click here</a></button>
         </div>
         <div class="card">
             <img src="{{ url_for('static',filename='images/Beverages.png') }}" class="card-img" alt="Image">
             <h3>Beverages</h3>
             <p>Select from our range of Cold and Warm Beverages served here.</p>
-            <button class="btn"><a href="/Beverages">Order Now</a></button>
+            <button class="btn"><a href="/Beverages">click here</a></button>
         </div>
         
     </div>
