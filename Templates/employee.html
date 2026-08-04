@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/employee.css') }}">
 </head>
 <body>
+    <div style="margin-bottom:15px;">
+        <a href="{{ url_for('employee_add') }}" style="background:#28a745; color:white; padding:10px 20px; border-radius:6px; text-decoration:none; font-weight:bold;">+ Add Employee</a>
+    </div>
     <form id="form" method="POST" action="{{url_for('employees')}}">   <!--** from function def **-->
         <input type="text" id="query" name="emp_id" placeholder="Enter EMP_ID">
         <input type="submit" value="Delete" />

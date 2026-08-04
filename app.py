@@ -380,6 +380,36 @@ def employees():
     employees = cursor.fetchall()
     return render_template("employee.html",employees=employees, error=error)
 
+
+@app.route("/employee/add", methods=['GET', 'POST'])
+def employee_add():
+    error = None
+    if request.method == 'POST':
+        emp_id = request.form.get('emp_id', '').strip()
+        emp_name = request.form.get('emp_name', '').strip()
+        designation = request.form.get('designation', '').strip()
+        gender = request.form.get('gender', '').strip()
+        mob_no = request.form.get('mob_no', '').strip()
+
+        if not emp_id or not emp_name or not designation or not gender or not mob_no:
+            error = 'Please fill out all fields!'
+        else:
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute('SELECT * FROM EMPLOYEE WHERE EMP_ID = %s', (emp_id,))
+            existing = cursor.fetchone()
+            if existing:
+                error = f'Employee ID "{emp_id}" already exists! Choose a different ID.'
+            else:
+                cursor.execute(
+                    'INSERT INTO EMPLOYEE (EMP_ID, EMP_NAME, DESIGNATION, GENDER, MOB_NO) VALUES (%s, %s, %s, %s, %s)',
+                    (emp_id, emp_name, designation, gender, mob_no)
+                )
+                mysql.connection.commit()
+                flash(f'{emp_name} added successfully!')
+                return redirect(url_for('employees'))
+
+    return render_template("employee_add.html", error=error)
+
 @app.route("/analytics")
 def analytics():
     return render_template("analytics.html")
