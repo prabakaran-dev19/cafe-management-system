@@ -2,6 +2,12 @@
 
 A full-stack web application built with **Flask** and **MySQL** to streamline daily cafe operations — dynamic menu browsing, cart-based ordering, automated billing, and an admin panel for complete menu control.
 
+### 🔗 Live Demo
+
+**[https://cafe-management-system-9mx7.onrender.com](https://cafe-management-system-9mx7.onrender.com)**
+
+> Hosted on Render's free tier — if the app has been idle, the first load can take 30–50 seconds to spin back up.
+
 ---
 
 ## 📌 Project Overview
